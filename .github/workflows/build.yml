@@ -1,0 +1,73 @@
+name: Build NGG FPS Renderer APK
+
+on:
+  push:
+    branches: [ "**" ]
+  workflow_dispatch:   # tombol "Run workflow" manual di tab Actions
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout kode
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.9'
+
+      # ====================================================================
+      #  AMBIL .so DARI RELEASE RESMI NGG (gak compile NDK sama sekali)
+      #  -> download APK release terbaru NGG-FCLRendererPlugin
+      #  -> bongkar, ambil semua lib/<abi>/*.so
+      #  -> taro ke jniLibs supaya ikut kebungkus di APK kita
+      # ====================================================================
+      - name: Ambil & ekstrak .so dari release NGG
+        run: |
+          set -e
+          echo "==> Cari APK release terbaru NGG-FCLRendererPlugin..."
+          ASSET_URL=$(curl -s https://api.github.com/repos/BZLZHH/NGG-FCLRendererPlugin/releases/latest \
+            | grep "browser_download_url" \
+            | grep -i "\.apk" \
+            | head -n 1 \
+            | cut -d '"' -f 4)
+
+          if [ -z "$ASSET_URL" ]; then
+            echo "::error::Gak nemu APK di release terbaru NGG. Cek manual nama asset-nya."
+            exit 1
+          fi
+
+          echo "==> Download: $ASSET_URL"
+          curl -L -o ngg-source.apk "$ASSET_URL"
+
+          echo "==> Bongkar lib/ dari APK sumber..."
+          mkdir -p _ngg_extract
+          unzip -o ngg-source.apk 'lib/*' -d _ngg_extract
+
+          echo "==> Salin .so ke jniLibs..."
+          mkdir -p app/src/main/jniLibs
+          cp -r _ngg_extract/lib/* app/src/main/jniLibs/
+
+          echo "==> Isi jniLibs sekarang:"
+          find app/src/main/jniLibs -name '*.so' | sort
+
+      - name: Build APK (debug)
+        run: gradle :app:assembleDebug --no-daemon --stacktrace
+
+      - name: Upload APK sebagai artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ngg-fps-renderer-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error

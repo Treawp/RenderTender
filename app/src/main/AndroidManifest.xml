@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      Plugin renderer murni: gak ada Activity, gak ada kode.
+      hasCode="false" -> APK gak butuh dex, build makin enteng.
+      Launcher (Zalith/FCL/Pojav) scan meta-data di bawah ini buat
+      ngenalin renderer + ngambil env var-nya.
+    -->
+    <application
+        android:allowBackup="false"
+        android:hasCode="false"
+        android:label="NGG FPS Renderer">
+
+        <!-- Tandain ke FCL/Zalith bahwa plugin ini tipe renderer -->
+        <meta-data
+            android:name="fclPlugin"
+            android:value="renderer" />
+
+        <!-- Definisi renderer: NAMA:lib_render.so:lib_egl.so -->
+        <meta-data
+            android:name="renderer"
+            android:value="${renderer}" />
+
+        <!-- Deskripsi yang muncul di daftar renderer launcher -->
+        <meta-data
+            android:name="des"
+            android:value="${des}" />
+
+        <!-- Env var FPS untuk Boat/Zalith runtime -->
+        <meta-data
+            android:name="boatEnv"
+            android:value="${boatEnv}" />
+
+        <!-- Env var FPS untuk PojavGlowWorm runtime -->
+        <meta-data
+            android:name="pojavEnv"
+            android:value="${pojavEnv}" />
+    </application>
+</manifest>

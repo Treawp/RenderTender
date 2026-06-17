@@ -1,0 +1,8 @@
+.gradle/
+build/
+app/build/
+local.properties
+*.iml
+.idea/
+# .so prebuilt ditarik otomatis oleh CI, gak perlu di-commit
+app/src/main/jniLibs/
