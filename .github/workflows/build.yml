@@ -62,6 +62,13 @@ jobs:
           echo "==> Isi jniLibs sekarang:"
           find app/src/main/jniLibs -name '*.so' | sort
 
+          echo "==> Verifikasi renderer .so (libng_gl4es.so) ada..."
+          if ! find app/src/main/jniLibs -name 'libng_gl4es.so' | grep -q .; then
+            echo "::warning::libng_gl4es.so TIDAK ditemukan. Nama .so yang tersedia di atas — sesuaikan 'renderer' di app/build.gradle.kts."
+          else
+            echo "OK: libng_gl4es.so ditemukan."
+          fi
+
       - name: Build APK (debug)
         run: gradle :app:assembleDebug --no-daemon --stacktrace
 

@@ -1,21 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <!--
-      Plugin renderer murni: gak ada Activity, gak ada kode.
-      hasCode="false" -> APK gak butuh dex, build makin enteng.
-      Launcher (Zalith/FCL/Pojav) scan meta-data di bawah ini buat
-      ngenalin renderer + ngambil env var-nya.
+      extractNativeLibs="true" WAJIB: bikin .so renderer di-extract ke disk,
+      biar launcher (Zalith/FCL/Pojav) bisa dlopen dari nativeLibraryDir plugin.
+      Tanpa ini, .so kekompres di APK dan renderer gagal di-load.
     -->
     <application
-        android:allowBackup="false"
-        android:hasCode="false"
-        android:label="NGG FPS Renderer">
+        android:allowBackup="true"
+        android:extractNativeLibs="true"
+        android:label="NGG FPS Renderer"
+        android:supportsRtl="true"
+        android:theme="@android:style/Theme.Material.Light.DarkActionBar">
 
-        <!-- Tandain ke FCL/Zalith bahwa plugin ini tipe renderer -->
+        <!--
+          KUNCI DETEKSI: launcher scan installed apps yg punya fclPlugin=true.
+          Sebelumnya gua isi "renderer" -> makanya gak kebaca sama sekali.
+        -->
         <meta-data
             android:name="fclPlugin"
-            android:value="renderer" />
+            android:value="true" />
 
         <!-- Definisi renderer: NAMA:lib_render.so:lib_egl.so -->
         <meta-data
@@ -36,5 +42,14 @@
         <meta-data
             android:name="pojavEnv"
             android:value="${pojavEnv}" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 </manifest>
